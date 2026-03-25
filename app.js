@@ -6,6 +6,9 @@
  *   • URL / parameter helpers
  *   • localStorage "recent ROMs" persistence
  *   • Virtual gamepad keyboard-event simulation
+ *   • GP Suite AI engine (Gitflow, Gitpulse, Gitarch, Gitsync, Gitscan)
+ *   • Giro Brain rhythm calculator
+ *   • Game Genie–style points / coins / level engine
  */
 
 /* ── System definitions ─────────────────────────────────────────────────── */
@@ -214,4 +217,225 @@ function initVirtualGamepad() {
     btn.addEventListener('mouseup',     release);
     btn.addEventListener('mouseleave',  release);
   });
+}
+
+/* ── Emulator readiness polling ─────────────────────────────────────────── */
+
+/**
+ * Poll until window.EJS_emulator is available, then call cb().
+ * Gives up after timeoutMs milliseconds and calls errCb().
+ */
+function waitForEmulator(cb, errCb, timeoutMs = 60000) {
+  const start    = Date.now();
+  const interval = setInterval(() => {
+    if (window.EJS_emulator) {
+      clearInterval(interval);
+      cb(window.EJS_emulator);
+    } else if (Date.now() - start > timeoutMs) {
+      clearInterval(interval);
+      if (errCb) errCb();
+    }
+  }, 300);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GP SUITE – Extended AI Engine
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * GP Suite AI definitions.
+ * Each agent has an id, name, symbol, role, status, and health value (0-100).
+ */
+const GP_AGENTS = [
+  {
+    id:     'gitflow',
+    name:   'Gitflow',
+    symbol: '≋',
+    title:  'The Streamliner',
+    role:   `Manages momentum of the inertia pool. Ensures smooth cloning/forking without rhythm shock.`,
+    color:  '#00d4ff',
+    status: 'nominal',
+    health: 98,
+  },
+  {
+    id:     'gitpulse',
+    name:   'Gitpulse',
+    symbol: '♥',
+    title:  'The Diagnostic',
+    role:   'Monitors the Erythmia. Flags off-beats in spatial code before they become full-blown glitches.',
+    color:  '#ff4d6d',
+    status: 'scanning',
+    health: 87,
+  },
+  {
+    id:     'gitarch',
+    name:   'Gitarch',
+    symbol: '🏛',
+    title:  'The Architect',
+    role:   'Heavy lifter for structural changes. Handles the foundation—the actual physics laws of the cloned world.',
+    color:  '#ffd700',
+    status: 'nominal',
+    health: 100,
+  },
+  {
+    id:     'gitsync',
+    name:   'Gitsync',
+    symbol: '⟲',
+    title:  'The Harmonizer',
+    role:   `Re-integrates patched rhythms back into the main existence. Ensures healing isn't rejected.`,
+    color:  '#7b2fff',
+    status: 'syncing',
+    health: 74,
+  },
+  {
+    id:     'gitscan',
+    name:   'Gitscan',
+    symbol: '◈',
+    title:  'The Sentry',
+    role:   'Constantly scans the cauldron of everything for external inertia forces that might interfere.',
+    color:  '#00ff9d',
+    status: 'alert',
+    health: 62,
+  },
+];
+
+/** Giro Brain – the central healer / Quantum Rhythm Engine state. */
+const GIRO_BRAIN = {
+  name:          'Giro Brain',
+  symbol:        '⊕',
+  title:         'Quantum Rhythm Engine',
+  coreFrequency: 432,     // Hz – base resonance
+  poolStability: 91,      // %
+  erythmiaBPM:   72,
+  status:        'healing',
+  color:         '#ff8c00',
+};
+
+/** Local GP state storage key */
+const GP_STATE_KEY = 'es_gp_state';
+
+function loadGPState() {
+  try { return JSON.parse(localStorage.getItem(GP_STATE_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveGPState(state) {
+  try { localStorage.setItem(GP_STATE_KEY, JSON.stringify(state)); } catch {}
+}
+
+/**
+ * Simulate one GP Suite heartbeat tick.
+ * Returns a shallow-cloned updated agents array with slightly varied health values.
+ */
+function gpHeartbeat(agents) {
+  return agents.map(a => {
+    const delta  = (Math.random() - 0.5) * GP_HEALTH_DELTA;
+    const health = Math.max(10, Math.min(100, a.health + delta));
+    const statuses = ['nominal', 'scanning', 'syncing', 'alert', 'healing'];
+    const status  = health < 40 ? 'alert'
+                  : health < 70 ? 'scanning'
+                  : a.status;
+    return { ...a, health: Math.round(health * 10) / 10, status };
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   GAME GENIE – Points / Coins / Levels Engine
+   ════════════════════════════════════════════════════════════════════════════ */
+
+const GENIE_KEY = 'es_genie_state';
+
+/** XP required to advance one level — shared by awardPlayer and the Genie UI. */
+const XP_PER_LEVEL = 100;
+
+/** Maximum health delta per GP heartbeat tick. */
+const GP_HEALTH_DELTA = 4;
+
+const DEFAULT_GENIE_STATE = {
+  points:    0,
+  coins:     0,
+  level:     1,
+  xp:        0,
+  cheats:    [],
+  unlockedLevels: [1],
+};
+
+function loadGenieState() {
+  try { return Object.assign({}, DEFAULT_GENIE_STATE, JSON.parse(localStorage.getItem(GENIE_KEY))); }
+  catch { return { ...DEFAULT_GENIE_STATE }; }
+}
+
+function saveGenieState(state) {
+  try { localStorage.setItem(GENIE_KEY, JSON.stringify(state)); } catch {}
+}
+
+/**
+ * Award points and coins to the player.
+ * Every 100 XP grants a level-up.
+ * @param {number} pts   – points to add
+ * @param {number} coins – coins to add
+ */
+function awardPlayer(pts, coins) {
+  const state = loadGenieState();
+  state.points += pts;
+  state.coins  += coins;
+  state.xp     += pts;
+
+  const xpPerLevel = XP_PER_LEVEL;
+  const newLevel   = Math.floor(state.xp / xpPerLevel) + 1;
+  if (newLevel > state.level) {
+    state.level = newLevel;
+    if (!state.unlockedLevels.includes(newLevel)) {
+      state.unlockedLevels.push(newLevel);
+    }
+    showToast(`🏆 Level ${newLevel} unlocked! +${coins} coins`);
+  }
+
+  saveGenieState(state);
+  return state;
+}
+
+/**
+ * Apply a cheat code string.
+ * Returns { ok: boolean, msg: string }.
+ */
+function applyCheatCode(code) {
+  const state  = loadGenieState();
+  const upper  = code.trim().toUpperCase();
+
+  // Built-in cheat library
+  const CHEATS = {
+    'IDDQD':    { pts: 500,  coins: 50,  msg: '☢️ God Mode activated! +500 pts' },
+    'IDKFA':    { pts: 300,  coins: 30,  msg: '🔫 Full Arsenal! +300 pts' },
+    'NOCLIP':   { pts: 200,  coins: 20,  msg: '👻 No-clip enabled! +200 pts' },
+    'LEVELUP':  { pts: 100,  coins: 10,  msg: '⬆️ Instant level up! +100 pts' },
+    'COINRAIN': { pts: 0,    coins: 99,  msg: '🪙 Coin Rain! +99 coins' },
+    'GENIE':    { pts: 1000, coins: 100, msg: '🧞 Genie granted! +1000 pts +100 coins' },
+  };
+
+  if (CHEATS[upper]) {
+    const c = CHEATS[upper];
+    const newState = awardPlayer(c.pts, c.coins);
+    if (!newState.cheats.includes(upper)) newState.cheats.push(upper);
+    saveGenieState(newState);
+    return { ok: true, msg: c.msg };
+  }
+
+  return { ok: false, msg: `Unknown cheat: ${code}` };
+}
+
+/**
+ * Unlock a new custom level by name.
+ * Returns the updated state.
+ */
+function unlockCustomLevel(levelName) {
+  const state = loadGenieState();
+  const id    = `custom_${levelName.trim().toLowerCase().replace(/\s+/g, '_')}`;
+  if (!state.unlockedLevels.includes(id)) {
+    state.unlockedLevels.push(id);
+    state.coins += 25;
+    saveGenieState(state);
+    showToast(`✨ Custom level "${levelName}" created! +25 coins`);
+  }
+  return state;
 }

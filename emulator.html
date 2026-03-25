@@ -12,7 +12,7 @@
     .emulator-page {
       display: flex;
       flex-direction: column;
-      min-height: 100dvh; /* dynamic viewport height for mobile */
+      min-height: 100dvh;
       background: #000;
     }
 
@@ -22,34 +22,41 @@
       align-items: center;
       gap: .4rem;
       padding: .4rem .6rem;
-      background: #0d0d1a;
-      border-bottom: 1px solid #2a2a4a;
+      background: #04040d;
+      border-bottom: 1px solid #1a1a35;
       flex-shrink: 0;
       flex-wrap: wrap;
       z-index: 10;
     }
-    .emu-topbar .btn { padding: .35rem .7rem; font-size: .75rem; height: 32px; }
+    .emu-topbar .btn { padding: .35rem .7rem; font-size: .72rem; height: 32px; }
     .game-title {
       flex: 1;
-      font-size: .85rem;
+      font-family: var(--font-hud);
+      font-size: .8rem;
       font-weight: 600;
       text-align: center;
-      color: #8888aa;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0,212,255,.4);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       min-width: 60px;
     }
     .sys-badge {
-      font-size: .68rem;
+      font-family: var(--font-hud);
+      font-size: .62rem;
       font-weight: 700;
-      padding: .15rem .45rem;
+      padding: .15rem .5rem;
       border-radius: 20px;
-      background: rgba(0,212,255,.15);
-      color: #00d4ff;
+      background: rgba(0,212,255,.12);
+      border: 1px solid rgba(0,212,255,.3);
+      color: var(--accent);
       white-space: nowrap;
       flex-shrink: 0;
     }
+    /* Save/Load buttons disabled state */
+    .btn[disabled] { opacity: .4; cursor: not-allowed; }
+    .btn[disabled]:hover { opacity: .4; transform: none; }
 
     /* EmulatorJS container */
     #game-wrapper {
@@ -65,22 +72,20 @@
       max-width: 960px;
       background: #000;
     }
-    /* Force EmulatorJS canvas to fill container */
     #game > * { width: 100% !important; }
     #game canvas { display: block; max-width: 100%; }
 
     /* Virtual gamepad panel */
     .virtual-gamepad {
       flex-shrink: 0;
-      background: #0d0d1a;
-      border-top: 1px solid #2a2a4a;
+      background: #04040d;
+      border-top: 1px solid #1a1a35;
       padding: .6rem .5rem .9rem;
       max-width: 960px;
       width: 100%;
       align-self: center;
     }
 
-    /* Gamepad layout */
     .gp-shoulder-row {
       display: flex;
       justify-content: space-between;
@@ -112,7 +117,7 @@
     .dpad-right { grid-area: right; }
     .dpad-center {
       grid-area: center;
-      background: #1a1a2e;
+      background: #12122a;
       border-radius: 3px;
       pointer-events: none;
     }
@@ -133,7 +138,6 @@
     .btn-a { grid-area: a; }
     .btn-b { grid-area: b; }
 
-    /* Center group: SELECT / analog / START */
     .gp-center-group {
       display: flex;
       flex-direction: column;
@@ -142,7 +146,6 @@
     }
     .gp-meta-row { display: flex; gap: .35rem; }
 
-    /* ── Gamepad button base ── */
     .gp-btn {
       display: flex;
       align-items: center;
@@ -161,58 +164,58 @@
       filter: brightness(1.4);
     }
 
-    /* D-pad buttons */
     .dpad-btn {
       width: 42px; height: 42px;
-      background: #1e1e3a;
+      background: #181830;
       border-radius: 8px;
       color: #d0d0e8;
       font-size: 1.05rem;
-      box-shadow: 0 3px 0 #0d0d22, inset 0 1px 0 rgba(255,255,255,.05);
+      box-shadow: 0 3px 0 #090918, inset 0 1px 0 rgba(255,255,255,.04);
     }
 
-    /* Shoulder buttons */
     .shoulder-btn {
       height: 30px;
       padding: 0 .75rem;
-      background: #1c1c36;
+      background: #141428;
       border-radius: 7px 7px 4px 4px;
-      color: #8888aa;
-      font-size: .7rem;
-      box-shadow: 0 4px 0 #0a0a18;
+      color: #7070a0;
+      font-family: var(--font-hud);
+      font-size: .64rem;
+      letter-spacing: .05em;
+      box-shadow: 0 4px 0 #080818;
     }
 
-    /* Action buttons */
     .action-btn {
       width: 42px; height: 42px;
       border-radius: 50%;
-      font-size: .75rem;
+      font-family: var(--font-hud);
+      font-size: .7rem;
       color: #fff;
     }
     .btn-a { background: #1e88e5; box-shadow: 0 3px 0 #0d47a1; }
-    .btn-b { background: #e53935; box-shadow: 0 3px 0 #b71c1c; }
-    .btn-x { background: #f57c00; box-shadow: 0 3px 0 #bf360c; }
-    .btn-y { background: #43a047; box-shadow: 0 3px 0 #1b5e20; }
+    .btn-b { background: #c0213e; box-shadow: 0 3px 0 #8a0e25; }
+    .btn-x { background: #e07800; box-shadow: 0 3px 0 #995200; }
+    .btn-y { background: #2ea84a; box-shadow: 0 3px 0 #175c28; }
 
-    /* Meta buttons (select/start) */
     .meta-btn {
       padding: .25rem .6rem;
       height: 26px;
-      background: #22223a;
+      background: #181830;
       border-radius: 20px;
-      color: #7878a0;
-      font-size: .63rem;
-      box-shadow: 0 2px 0 #0d0d22;
+      color: #7070a0;
+      font-family: var(--font-hud);
+      font-size: .58rem;
+      letter-spacing: .06em;
+      box-shadow: 0 2px 0 #090918;
     }
 
-    /* Gamepad toggle */
     #toggleGamepad {
       position: fixed;
       bottom: 1rem;
       right: 1rem;
       width: 46px; height: 46px;
       border-radius: 50%;
-      background: #7b2fff;
+      background: var(--accent2);
       color: #fff;
       border: none;
       font-size: 1.3rem;
@@ -223,14 +226,15 @@
       justify-content: center;
       box-shadow: 0 4px 16px rgba(123,47,255,.55);
       touch-action: none;
+      transition: background .2s, box-shadow .2s;
     }
-    #toggleGamepad:hover { background: #6320cc; }
+    #toggleGamepad:hover { background: #6320cc; box-shadow: 0 4px 24px rgba(123,47,255,.8); }
 
-    /* keyboard hint (desktop) */
     .kb-hint {
       text-align: center;
-      font-size: .72rem;
-      color: #555580;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      color: #404060;
       padding: .3rem 0 .5rem;
       border-top: 1px solid #1a1a2e;
       margin-top: .5rem;
@@ -245,8 +249,8 @@
   <span class="game-title" id="gameTitle">Loading…</span>
   <span class="sys-badge" id="sysBadge"></span>
   <button class="btn btn-secondary" id="btnFullscreen" title="Fullscreen (F)">⛶</button>
-  <button class="btn btn-secondary" id="btnSave"       title="Save State">💾</button>
-  <button class="btn btn-secondary" id="btnLoad"       title="Load State">📂</button>
+  <button class="btn btn-secondary" id="btnSave" title="Save State" disabled>💾</button>
+  <button class="btn btn-secondary" id="btnLoad" title="Load State" disabled>📂</button>
 </nav>
 
 <!-- ══ Game Screen ═══════════════════════════════════════════════════════ -->
@@ -289,7 +293,7 @@
       </div>
     </div>
 
-    <!-- Action buttons diamond: Y / X · A / B -->
+    <!-- Action buttons diamond -->
     <div class="action-diamond" aria-label="Action buttons">
       <button class="gp-btn action-btn btn-y" data-button="y" aria-label="Y button">Y</button>
       <button class="gp-btn action-btn btn-x" data-button="x" aria-label="X button">X</button>
@@ -299,15 +303,69 @@
 
   </div><!-- /.gp-main-row -->
 
-  <!-- Keyboard hint shown on desktop -->
   <div class="kb-hint">
-    ⌨ Keyboard: Arrows = D-pad &nbsp;|&nbsp; Z=B &nbsp; X=A &nbsp; A=Y &nbsp; S=X &nbsp;
+    ⌨ Arrows = D-pad &nbsp;|&nbsp; Z=B &nbsp; X=A &nbsp; A=Y &nbsp; S=X &nbsp;
     Enter=Start &nbsp; Shift=Select &nbsp; Q=L1 &nbsp; W=R1
   </div>
 
 </div><!-- /#virtualGamepad -->
 
-<!-- ══ Gamepad toggle FAB (mobile: always show; desktop: toggle) ══════════ -->
+<!-- ══ Game Genie Panel ══════════════════════════════════════════════════ -->
+<div class="genie-panel" id="geniePanel" aria-label="Game Genie AI Panel">
+  <div class="genie-header" id="genieHeader" role="button" tabindex="0" aria-expanded="true">
+    <h3>🧞 Game Genie — Points · Coins · Levels</h3>
+    <span class="genie-toggle-icon">▾</span>
+  </div>
+  <div class="genie-body" id="genieBody">
+
+    <!-- Stats row -->
+    <div class="genie-stats-row">
+      <div class="genie-stat">
+        <span class="genie-stat-icon">⭐</span>
+        <span class="genie-stat-val" id="geniePoints">0</span>
+        <span class="genie-stat-lbl">Points</span>
+      </div>
+      <div class="genie-stat">
+        <span class="genie-stat-icon">🪙</span>
+        <span class="genie-stat-val" id="genieCoins">0</span>
+        <span class="genie-stat-lbl">Coins</span>
+      </div>
+      <div class="genie-stat">
+        <span class="genie-stat-icon">🏆</span>
+        <span class="genie-stat-val" id="genieLevel">1</span>
+        <span class="genie-stat-lbl">Level</span>
+      </div>
+      <div class="genie-xp-bar-wrap">
+        <div class="genie-xp-label">
+          <span>XP</span>
+          <span id="genieXPLabel">0 / 100</span>
+        </div>
+        <div class="genie-xp-bar">
+          <div class="genie-xp-fill" id="genieXPBar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cheat code input -->
+    <div class="genie-cheat-row">
+      <input type="text" id="cheatInput" placeholder="ENTER CHEAT CODE" maxlength="32"
+             aria-label="Cheat code input" autocomplete="off" />
+      <button class="btn btn-genie" onclick="applyGenieCheat()">Apply 🧞</button>
+      <button class="btn btn-secondary" onclick="awardGeniePts()" title="+10 pts per click">+10 pts</button>
+    </div>
+
+    <!-- Level unlock -->
+    <div class="genie-level-row">
+      <input type="text" id="levelInput" placeholder="New level name…" maxlength="40"
+             aria-label="New level name" autocomplete="off" />
+      <button class="btn btn-secondary" onclick="createGenieLevel()">✨ Unlock Level</button>
+    </div>
+    <div class="genie-unlocked-levels" id="genieUnlockedLevels"></div>
+
+  </div><!-- /.genie-body -->
+</div><!-- /#geniePanel -->
+
+<!-- ══ Gamepad toggle FAB ═════════════════════════════════════════════════ -->
 <button id="toggleGamepad" title="Toggle gamepad" aria-label="Toggle virtual gamepad">🎮</button>
 
 <!-- ══ Toast ══════════════════════════════════════════════════════════════ -->
@@ -327,11 +385,12 @@
   if (!core || !romUrl) {
     document.getElementById('gameTitle').textContent = 'No ROM specified';
     document.getElementById('game-wrapper').innerHTML =
-      '<div style="color:#ff4444;padding:2rem;text-align:center">' +
+      '<div style="color:#ff4444;padding:2rem;text-align:center;font-family:var(--font-mono)">' +
       '⚠️ No ROM URL or system core provided.<br><br>' +
-      '<a href="index.html" style="color:#00d4ff">← Go back to the launcher</a></div>';
+      '<a href="index.html" style="color:var(--accent)">← Go back to the launcher</a></div>';
     document.getElementById('virtualGamepad').style.display = 'none';
     document.getElementById('toggleGamepad').style.display  = 'none';
+    document.getElementById('geniePanel').style.display     = 'none';
     return;
   }
 
@@ -339,30 +398,23 @@
   document.title = name + ' – Emulation Station';
   document.getElementById('gameTitle').textContent = name;
 
-  const sys = sysId ? getSystem(sysId) : null;
+  const sys   = sysId ? getSystem(sysId) : null;
   const badge = document.getElementById('sysBadge');
   if (sys) badge.textContent = sys.name;
 
   /* ── Save to recent list ── */
   saveRecentROM({ name, core, rom: romUrl, sysId: sysId || '', ts: Date.now() });
 
-  /* ── EmulatorJS configuration ─────────────────────────────────────────
-     All EJS_* variables must be set BEFORE loading emulator.min.js
-     ────────────────────────────────────────────────────────────────── */
-  window.EJS_player       = '#game';
-  window.EJS_core         = core;
-  window.EJS_gameUrl      = romUrl;
-  window.EJS_pathtodata   = 'https://cdn.emulatorjs.org/stable/data/';
+  /* ── EmulatorJS configuration ────────────────────────────────────────── */
+  window.EJS_player        = '#game';
+  window.EJS_core          = core;
+  window.EJS_gameUrl       = romUrl;
+  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/stable/data/';
   window.EJS_startOnLoaded = true;
-
-  // Disable the built-in overlay gamepad; we render our own below the screen
-  window.EJS_VirtualGamepad = false;
-
-  // Theme colours
+  window.EJS_VirtualGamepad   = false;
   window.EJS_color            = '#00d4ff';
   window.EJS_backgroundColor  = '#000000';
 
-  // Hide buttons we don't need
   window.EJS_Buttons = {
     playPause:    true,
     restart:      true,
@@ -375,7 +427,7 @@
     cheat:        false,
     volume:       true,
     saveSate:     true,   // EmulatorJS uses this misspelling; kept for API compatibility
-    saveState:    true,   // correct spelling (for future EmulatorJS versions)
+    saveState:    true,
     loadState:    true,
     screenRecord: false,
     screenshot:   false,
@@ -384,24 +436,37 @@
 
   /* ── Callback: game started ── */
   window.EJS_onGameStart = function () {
-    // Initialise virtual gamepad input AFTER emulator is ready
     initVirtualGamepad();
+    enableSaveLoad();
     showToast('🎮 Game started! Enjoy.');
+    awardPlayer(50, 5); // reward for starting a game
+    refreshGenieUI();
   };
 
-  /* ── Callback: loading state ── */
   window.EJS_onLoadState = function () { showToast('💾 State loaded.'); };
-  window.EJS_onSaveState = function () { showToast('💾 State saved.'); };
+  window.EJS_onSaveState = function () { showToast('💾 State saved.'); awardPlayer(10, 1); refreshGenieUI(); };
+
+  /* ── Enable Save/Load buttons once emulator is ready ── */
+  function enableSaveLoad() {
+    document.getElementById('btnSave').removeAttribute('disabled');
+    document.getElementById('btnLoad').removeAttribute('disabled');
+  }
+
+  /* ── Poll for emulator readiness (fallback if EJS_onGameStart doesn't fire) ── */
+  waitForEmulator(
+    function () { enableSaveLoad(); },
+    function () { /* timed out — leave buttons disabled */ }
+  );
 
   /* ── Inject EmulatorJS script dynamically ── */
-  const ejsScript    = document.createElement('script');
-  ejsScript.src      = 'https://cdn.emulatorjs.org/stable/data/emulator.min.js';
-  ejsScript.async    = false;
-  ejsScript.onerror  = function () {
+  const ejsScript   = document.createElement('script');
+  ejsScript.src     = 'https://cdn.emulatorjs.org/stable/data/emulator.min.js';
+  ejsScript.async   = false;
+  ejsScript.onerror = function () {
     document.getElementById('game-wrapper').innerHTML =
-      '<div style="color:#ff4444;padding:2rem;text-align:center">' +
-      '⚠️ Failed to load EmulatorJS. Please check your internet connection and try again.<br><br>' +
-      '<a href="index.html" style="color:#00d4ff">← Back to launcher</a></div>';
+      '<div style="color:#ff4444;padding:2rem;text-align:center;font-family:var(--font-mono)">' +
+      '⚠️ Failed to load EmulatorJS. Check your internet connection and try again.<br><br>' +
+      '<a href="index.html" style="color:var(--accent)">← Back to launcher</a></div>';
   };
   document.head.appendChild(ejsScript);
 
@@ -421,26 +486,23 @@
   document.getElementById('btnSave').addEventListener('click', () => {
     if (window.EJS_emulator) {
       window.EJS_emulator.saveState();
-      showToast('💾 State saved.');
     } else {
-      showToast('⚠️ Emulator not ready yet.');
+      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
     }
   });
   document.getElementById('btnLoad').addEventListener('click', () => {
     if (window.EJS_emulator) {
       window.EJS_emulator.loadState();
-      showToast('📂 State loaded.');
     } else {
-      showToast('⚠️ Emulator not ready yet.');
+      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
     }
   });
 
   /* ── Toggle virtual gamepad ── */
-  const gamepadEl    = document.getElementById('virtualGamepad');
-  const toggleBtn    = document.getElementById('toggleGamepad');
-  let   gamepadVisible = true;
+  const gamepadEl   = document.getElementById('virtualGamepad');
+  const toggleBtn   = document.getElementById('toggleGamepad');
+  let gamepadVisible = true;
 
-  // On desktop: hide gamepad by default; show toggle button
   if (window.matchMedia('(min-width: 900px)').matches) {
     gamepadEl.style.display = 'none';
     gamepadVisible = false;
@@ -450,8 +512,82 @@
     gamepadVisible = !gamepadVisible;
     gamepadEl.style.display = gamepadVisible ? '' : 'none';
     toggleBtn.title = gamepadVisible ? 'Hide gamepad' : 'Show gamepad';
-    if (gamepadVisible) initVirtualGamepad(); // re-bind in case DOM was hidden
+    if (gamepadVisible) initVirtualGamepad();
   });
+
+  /* ── Game Genie Panel ── */
+  function refreshGenieUI() {
+    const state = loadGenieState();
+    document.getElementById('geniePoints').textContent = state.points.toLocaleString();
+    document.getElementById('genieCoins').textContent  = state.coins.toLocaleString();
+    document.getElementById('genieLevel').textContent  = state.level;
+
+    const xpPerLevel   = XP_PER_LEVEL;
+    const xpInLevel    = state.xp % xpPerLevel;
+    document.getElementById('genieXPBar').style.width = (xpInLevel) + '%';
+    document.getElementById('genieXPLabel').textContent = `${xpInLevel} / ${xpPerLevel}`;
+
+    /* Render unlocked level badges */
+    const container = document.getElementById('genieUnlockedLevels');
+    container.innerHTML = '';
+    state.unlockedLevels.forEach(lvl => {
+      const badge = document.createElement('span');
+      badge.className = 'genie-level-badge';
+      badge.textContent = formatLevelLabel(lvl);
+      container.appendChild(badge);
+    });
+  }
+
+  /** Format a level identifier for display in a badge. */
+  function formatLevelLabel(lvl) {
+    if (typeof lvl === 'number') return `Lv ${lvl}`;
+    return lvl.replace('custom_', '').replace(/_/g, ' ');
+  }
+
+  window.applyGenieCheat = function () {
+    const input = document.getElementById('cheatInput');
+    const code  = input.value.trim();
+    if (!code) { showToast('⚠️ Enter a cheat code first.'); return; }
+    const result = applyCheatCode(code);
+    showToast(result.msg, 4000);
+    input.value = '';
+    refreshGenieUI();
+  };
+
+  window.awardGeniePts = function () {
+    awardPlayer(10, 1);
+    refreshGenieUI();
+    showToast('⭐ +10 pts, +1 coin');
+  };
+
+  window.createGenieLevel = function () {
+    const input = document.getElementById('levelInput');
+    const lName = input.value.trim();
+    if (!lName) { showToast('⚠️ Enter a level name first.'); return; }
+    unlockCustomLevel(lName);
+    input.value = '';
+    refreshGenieUI();
+  };
+
+  /* Genie panel toggle */
+  const genieHeader = document.getElementById('genieHeader');
+  const genieBody   = document.getElementById('genieBody');
+  genieHeader.addEventListener('click', () => {
+    const collapsed = genieHeader.classList.toggle('collapsed');
+    genieBody.classList.toggle('collapsed', collapsed);
+    genieHeader.setAttribute('aria-expanded', String(!collapsed));
+  });
+  genieHeader.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); genieHeader.click(); }
+  });
+
+  /* Cheat input – Enter key */
+  document.getElementById('cheatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') applyGenieCheat();
+  });
+
+  /* Initial render */
+  refreshGenieUI();
 
 })();
 </script>

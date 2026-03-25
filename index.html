@@ -10,15 +10,16 @@
     /* ── Page-specific overrides ── */
     .page-wrapper { max-width: 1200px; margin: 0 auto; }
     .cors-note {
-      background: rgba(255, 107, 53, .12);
-      border: 1px solid rgba(255, 107, 53, .35);
+      background: rgba(255, 107, 53, .10);
+      border: 1px solid rgba(255, 107, 53, .30);
       border-radius: 8px;
-      padding: .65rem 1rem;
-      font-size: .82rem;
-      color: #ffb380;
+      padding: .6rem 1rem;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: #ff9560;
       margin-top: .75rem;
     }
-    .cors-note a { color: #ffb380; text-decoration: underline; }
+    .cors-note a { color: #ff9560; text-decoration: underline; }
     .launch-bar {
       display: flex;
       gap: .5rem;
@@ -33,7 +34,12 @@
 <!-- ══ Header ══════════════════════════════════════════════════════════════ -->
 <header class="site-header">
   <div class="logo">🎮 Emulation Station</div>
-  <p class="tagline">Every system. Every game. Paste a ROM URL and play instantly.</p>
+  <p class="tagline">[ Every system. Every game. Paste a ROM URL and play instantly. ]</p>
+  <nav class="header-links" aria-label="External links">
+    <a href="https://romsgames.com" target="_blank" rel="noopener">🕹 RomsGames.com</a>
+    <a href="https://emulatorjs.org" target="_blank" rel="noopener">⚡ EmulatorJS</a>
+    <a href="#gp-suite">◈ GP Suite</a>
+  </nav>
 </header>
 
 <div class="page-wrapper">
@@ -80,8 +86,9 @@
       <p class="cors-note">
         ⚠️ <strong>CORS note:</strong> The ROM server must allow cross-origin requests.
         If your URL doesn't work, try a
-        <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener">CORS proxy</a>
-        or download the ROM and use the local-file option.
+        <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener">CORS proxy</a>,
+        download the ROM and use the local-file option, or browse
+        <a href="https://romsgames.com" target="_blank" rel="noopener">RomsGames.com</a> for compatible ROMs.
       </p>
     </div>
   </section>
@@ -94,11 +101,47 @@
             onclick="clearRecent()">Clear history</button>
   </section>
 
+  <!-- ══ GP Suite Dashboard ════════════════════════════════════════════════ -->
+  <section class="gp-suite-section" id="gp-suite" aria-label="GP Suite AI Dashboard">
+    <h2>◈ GP Suite — Giro Brain Dashboard</h2>
+    <p class="gp-subtitle">[ Quantum Rhythm Engine · Extended AI peripheral nervous system ]</p>
+
+    <!-- Giro Brain core panel -->
+    <div class="giro-brain-panel" id="giroBrainPanel">
+      <div class="giro-core-symbol" id="giroCoreSymbol">⊕</div>
+      <div class="giro-brain-info">
+        <h3>Giro Brain · Quantum Rhythm Engine</h3>
+        <p class="giro-sub">The Centrifugal Core — Operational Symptomatic Regulator</p>
+        <div class="giro-stats">
+          <div class="giro-stat">
+            <span class="giro-stat-label">Frequency</span>
+            <span class="giro-stat-value" id="giroFreq">432 Hz</span>
+          </div>
+          <div class="giro-stat">
+            <span class="giro-stat-label">Pool Stability</span>
+            <span class="giro-stat-value" id="giroStability">91%</span>
+          </div>
+          <div class="giro-stat">
+            <span class="giro-stat-label">Erythmia BPM</span>
+            <span class="giro-stat-value" id="giroBPM">72</span>
+          </div>
+          <div class="giro-stat">
+            <span class="giro-stat-label">Status</span>
+            <span class="giro-stat-value status-healing" id="giroStatus">HEALING</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agent cards grid -->
+    <div class="gp-agents-grid" id="gpAgentsGrid"></div>
+  </section>
+
   <!-- ══ System Browser ════════════════════════════════════════════════════ -->
   <section class="systems-section" aria-label="System browser">
     <h2>🗂 Browse Systems</h2>
-    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1.5rem">
-      Click any system card to pre-select it, then enter a ROM URL above and hit Play.
+    <p style="color:var(--text-muted);font-family:var(--font-mono);font-size:.8rem;margin-bottom:1.5rem">
+      [ Click any system card to pre-select it, then enter a ROM URL above and hit Play ]
     </p>
     <div id="categoriesContainer"></div>
   </section>
@@ -136,7 +179,7 @@
     block.className = 'category-block';
     block.innerHTML = `
       <div class="category-title">
-        <span class="category-dot" style="background:${cat.color}"></span>
+        <span class="category-dot" style="background:${cat.color};color:${cat.color}"></span>
         ${cat.label}
       </div>
       <div class="system-grid" id="grid-${cat.id}"></div>`;
@@ -154,19 +197,15 @@
       card.style.borderColor = 'var(--border)';
 
       card.addEventListener('click', () => {
-        // Deselect all cards, select this one
         document.querySelectorAll('.system-card').forEach(c => {
           c.classList.remove('selected');
           c.style.borderColor = 'var(--border)';
+          c.style.boxShadow   = '';
         });
         card.classList.add('selected');
         card.style.borderColor = cat.color;
-        card.style.boxShadow   = `0 0 0 2px ${cat.color}44`;
-
-        // Sync the <select>
+        card.style.boxShadow   = `0 0 0 2px ${cat.color}44, 0 0 16px ${cat.color}22`;
         document.getElementById('systemSelect').value = sys.id;
-
-        // Scroll to quick-play
         document.querySelector('.quick-play').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
@@ -178,19 +217,16 @@
   document.getElementById('romFile').addEventListener('change', function () {
     if (!this.files || !this.files[0]) return;
     const file = this.files[0];
-    // Store the object URL so we can pass it to EmulatorJS
-    window._localRomUrl = URL.createObjectURL(file);
+    window._localRomUrl  = URL.createObjectURL(file);
     window._localRomName = file.name.replace(/\.[^.]+$/, '');
 
     const nameInput = document.getElementById('gameName');
     if (!nameInput.value) nameInput.value = window._localRomName;
 
-    // Try to auto-detect system from extension
-    const ext = ('.' + file.name.split('.').pop()).toLowerCase();
+    const ext   = ('.' + file.name.split('.').pop()).toLowerCase();
     const match = SYSTEMS.find(s => s.exts.split(' ').includes(ext));
     if (match) {
       document.getElementById('systemSelect').value = match.id;
-      // Highlight card
       document.querySelectorAll('.system-card').forEach(c => {
         c.classList.remove('selected');
         c.style.borderColor = 'var(--border)';
@@ -239,15 +275,13 @@
     const sys   = getSystem(sysId);
     if (!sys) { showToast('⚠️ Please choose a system first.'); return; }
 
-    const name    = document.getElementById('gameName').value.trim() || window._localRomName || 'Game';
+    const name     = document.getElementById('gameName').value.trim() || window._localRomName || 'Game';
     const urlInput = document.getElementById('romUrl').value.trim();
-    const rom     = window._localRomUrl || urlInput;
+    const rom      = window._localRomUrl || urlInput;
 
     if (!rom) { showToast('⚠️ Enter a ROM URL or upload a local file.'); return; }
 
-    // Save to recent list before navigating
     saveRecentROM({ name, core: sys.core, rom: urlInput || rom, sysId, ts: Date.now() });
-
     launchEmulator(sys.core, rom, name, sysId);
   };
 
@@ -259,6 +293,59 @@
   document.getElementById('romUrl').addEventListener('keydown', e => {
     if (e.key === 'Enter') handleLaunch();
   });
+
+  /* ── GP Suite Dashboard ── */
+  (function buildGPSuite() {
+    const grid = document.getElementById('gpAgentsGrid');
+
+    GP_AGENTS.forEach(agent => {
+      const card = document.createElement('div');
+      card.className   = 'gp-agent-card';
+      card.id          = `agent-${agent.id}`;
+      card.style.setProperty('--agent-color', agent.color);
+      card.innerHTML = `
+        <div class="gp-status-dot"></div>
+        <div class="gp-agent-header">
+          <div class="gp-agent-symbol">${agent.symbol}</div>
+          <div class="gp-agent-label">
+            <h4>${agent.name}</h4>
+            <div class="gp-agent-title">${agent.title}</div>
+          </div>
+        </div>
+        <p class="gp-agent-role">${agent.role}</p>
+        <div class="gp-health-bar-wrap">
+          <div class="gp-health-bar">
+            <div class="gp-health-fill" id="health-fill-${agent.id}" style="width:${agent.health}%"></div>
+          </div>
+          <span class="gp-health-pct" id="health-pct-${agent.id}">${agent.health}%</span>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    /* Heartbeat tick – update health bars every 3 s */
+    let agents = GP_AGENTS.slice();
+    setInterval(() => {
+      agents = gpHeartbeat(agents);
+      agents.forEach(a => {
+        const fill = document.getElementById(`health-fill-${a.id}`);
+        const pct  = document.getElementById(`health-pct-${a.id}`);
+        if (fill) fill.style.width = a.health + '%';
+        if (pct)  pct.textContent  = a.health + '%';
+      });
+
+      /* Giro Brain pulse */
+      const bpmDelta  = Math.round((Math.random() - 0.5) * 4);
+      const newBPM    = Math.max(55, Math.min(110, GIRO_BRAIN.erythmiaBPM + bpmDelta));
+      GIRO_BRAIN.erythmiaBPM = newBPM;
+      const bpmEl = document.getElementById('giroBPM');
+      if (bpmEl) bpmEl.textContent = newBPM;
+
+      const stabilityDelta = (Math.random() - 0.5) * 2;
+      GIRO_BRAIN.poolStability = Math.max(50, Math.min(100, GIRO_BRAIN.poolStability + stabilityDelta));
+      const stEl = document.getElementById('giroStability');
+      if (stEl) stEl.textContent = Math.round(GIRO_BRAIN.poolStability) + '%';
+    }, 3000);
+  })();
 
 })();
 </script>
