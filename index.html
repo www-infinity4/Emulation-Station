@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emulation Station – Play Any Game, Any System</title>
+  <meta name="description" content="Web-based emulation station supporting Atari, Commodore, NES, SNES, N64, GBA, DS, Genesis, Dreamcast, PlayStation and more. Load ROMs from any URL." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Page-specific overrides ── */
+    .page-wrapper { max-width: 1200px; margin: 0 auto; }
+    .cors-note {
+      background: rgba(255, 107, 53, .12);
+      border: 1px solid rgba(255, 107, 53, .35);
+      border-radius: 8px;
+      padding: .65rem 1rem;
+      font-size: .82rem;
+      color: #ffb380;
+      margin-top: .75rem;
+    }
+    .cors-note a { color: #ffb380; text-decoration: underline; }
+    .launch-bar {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .launch-bar > .btn { height: 42px; }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══════════════════════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="logo">🎮 Emulation Station</div>
+  <p class="tagline">Every system. Every game. Paste a ROM URL and play instantly.</p>
+</header>
+
+<div class="page-wrapper">
+
+  <!-- ══ Quick-Play ════════════════════════════════════════════════════════ -->
+  <section class="quick-play" aria-label="Quick play">
+    <h2>▶ Quick Play</h2>
+
+    <div class="quick-play-form">
+
+      <!-- Row 1: system + name -->
+      <div class="form-row">
+        <div class="input-group">
+          <label for="systemSelect">System</label>
+          <select id="systemSelect">
+            <option value="">— Choose a system —</option>
+          </select>
+        </div>
+        <div class="input-group" style="flex:2 1 260px">
+          <label for="gameName">Game name (optional)</label>
+          <input type="text" id="gameName" placeholder="e.g. Super Mario Bros" />
+        </div>
+      </div>
+
+      <!-- Row 2: URL input -->
+      <div class="input-group">
+        <label for="romUrl">ROM URL</label>
+        <input type="url" id="romUrl" placeholder="https://example.com/game.nes" autocomplete="off" />
+      </div>
+
+      <!-- Row 3: OR / file upload / launch -->
+      <div class="or-divider">or upload a local file</div>
+
+      <div class="launch-bar">
+        <label class="file-upload-label" for="romFile" title="Upload a local ROM file">
+          📁 Choose ROM file
+          <input type="file" id="romFile" accept=".nes,.smc,.sfc,.gb,.gbc,.gba,.z64,.n64,.v64,.nds,.md,.gen,.bin,.sms,.gg,.psx,.iso,.cue,.chd,.pbp,.a26,.a52,.a78,.lnx,.j64,.d64,.prg,.tap,.ngp,.ngc,.ws,.wsc,.pce,.adf,.32x,.gdi,.cdi,.zip,.rom" />
+        </label>
+        <button class="btn btn-primary" id="launchBtn" onclick="handleLaunch()">
+          ▶ Play Now
+        </button>
+      </div>
+
+      <p class="cors-note">
+        ⚠️ <strong>CORS note:</strong> The ROM server must allow cross-origin requests.
+        If your URL doesn't work, try a
+        <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener">CORS proxy</a>
+        or download the ROM and use the local-file option.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ Recent ROMs ════════════════════════════════════════════════════════ -->
+  <section class="recent-section" aria-label="Recent games" id="recentSection" style="display:none">
+    <h2>🕘 Recent Games</h2>
+    <ul id="recentList" aria-label="Recently played games"></ul>
+    <button class="btn btn-secondary" style="margin-top:.5rem;font-size:.78rem;padding:.35rem .8rem"
+            onclick="clearRecent()">Clear history</button>
+  </section>
+
+  <!-- ══ System Browser ════════════════════════════════════════════════════ -->
+  <section class="systems-section" aria-label="System browser">
+    <h2>🗂 Browse Systems</h2>
+    <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1.5rem">
+      Click any system card to pre-select it, then enter a ROM URL above and hit Play.
+    </p>
+    <div id="categoriesContainer"></div>
+  </section>
+
+</div><!-- /.page-wrapper -->
+
+<!-- ══ Toast ══════════════════════════════════════════════════════════════ -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ══ Scripts ══════════════════════════════════════════════════════════════ -->
+<script src="app.js"></script>
+<script>
+(function () {
+  /* ── Build system <select> ── */
+  const sel = document.getElementById('systemSelect');
+  CATEGORIES.forEach(cat => {
+    const group = document.createElement('optgroup');
+    group.label = cat.label;
+    SYSTEMS.filter(s => s.cat === cat.id).forEach(sys => {
+      const opt = document.createElement('option');
+      opt.value = sys.id;
+      opt.textContent = sys.name;
+      group.appendChild(opt);
+    });
+    sel.appendChild(group);
+  });
+
+  /* ── Build system cards grid ── */
+  const container = document.getElementById('categoriesContainer');
+  CATEGORIES.forEach(cat => {
+    const systems = SYSTEMS.filter(s => s.cat === cat.id);
+    if (!systems.length) return;
+
+    const block = document.createElement('div');
+    block.className = 'category-block';
+    block.innerHTML = `
+      <div class="category-title">
+        <span class="category-dot" style="background:${cat.color}"></span>
+        ${cat.label}
+      </div>
+      <div class="system-grid" id="grid-${cat.id}"></div>`;
+    container.appendChild(block);
+
+    const grid = block.querySelector('.system-grid');
+    systems.forEach(sys => {
+      const card = document.createElement('div');
+      card.className = 'system-card';
+      card.style.cssText = `--cat-color:${cat.color}`;
+      card.innerHTML = `
+        <div class="system-icon">${sys.icon}</div>
+        <div class="system-name">${sys.name}</div>
+        <div class="system-exts">${sys.exts}</div>`;
+      card.style.borderColor = 'var(--border)';
+
+      card.addEventListener('click', () => {
+        // Deselect all cards, select this one
+        document.querySelectorAll('.system-card').forEach(c => {
+          c.classList.remove('selected');
+          c.style.borderColor = 'var(--border)';
+        });
+        card.classList.add('selected');
+        card.style.borderColor = cat.color;
+        card.style.boxShadow   = `0 0 0 2px ${cat.color}44`;
+
+        // Sync the <select>
+        document.getElementById('systemSelect').value = sys.id;
+
+        // Scroll to quick-play
+        document.querySelector('.quick-play').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      grid.appendChild(card);
+    });
+  });
+
+  /* ── File input – auto-fill ROM name from filename ── */
+  document.getElementById('romFile').addEventListener('change', function () {
+    if (!this.files || !this.files[0]) return;
+    const file = this.files[0];
+    // Store the object URL so we can pass it to EmulatorJS
+    window._localRomUrl = URL.createObjectURL(file);
+    window._localRomName = file.name.replace(/\.[^.]+$/, '');
+
+    const nameInput = document.getElementById('gameName');
+    if (!nameInput.value) nameInput.value = window._localRomName;
+
+    // Try to auto-detect system from extension
+    const ext = ('.' + file.name.split('.').pop()).toLowerCase();
+    const match = SYSTEMS.find(s => s.exts.split(' ').includes(ext));
+    if (match) {
+      document.getElementById('systemSelect').value = match.id;
+      // Highlight card
+      document.querySelectorAll('.system-card').forEach(c => {
+        c.classList.remove('selected');
+        c.style.borderColor = 'var(--border)';
+        c.style.boxShadow   = '';
+      });
+    }
+    showToast(`📁 Loaded: ${file.name}`);
+  });
+
+  /* ── Recent ROMs ── */
+  function renderRecent() {
+    const list    = getRecentROMs();
+    const section = document.getElementById('recentSection');
+    const ul      = document.getElementById('recentList');
+    ul.innerHTML  = '';
+
+    if (!list.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+
+    list.forEach(entry => {
+      const sys = getSystem(entry.sysId);
+      const li  = document.createElement('li');
+      li.className = 'recent-item';
+      li.innerHTML = `
+        <div class="recent-item-info">
+          <span>${sys ? sys.icon : '🎮'}</span>
+          <span class="recent-item-name">${escHtml(entry.name)}</span>
+        </div>
+        <span class="recent-item-system">${sys ? sys.name : entry.sysId}</span>
+        <span class="recent-item-play">▶</span>`;
+      li.addEventListener('click', () => launchEmulator(entry.core, entry.rom, entry.name, entry.sysId));
+      ul.appendChild(li);
+    });
+  }
+  renderRecent();
+
+  window.clearRecent = function () {
+    clearRecentROMs();
+    renderRecent();
+    showToast('History cleared.');
+  };
+
+  /* ── Launch handler ── */
+  window.handleLaunch = function () {
+    const sysId = document.getElementById('systemSelect').value;
+    const sys   = getSystem(sysId);
+    if (!sys) { showToast('⚠️ Please choose a system first.'); return; }
+
+    const name    = document.getElementById('gameName').value.trim() || window._localRomName || 'Game';
+    const urlInput = document.getElementById('romUrl').value.trim();
+    const rom     = window._localRomUrl || urlInput;
+
+    if (!rom) { showToast('⚠️ Enter a ROM URL or upload a local file.'); return; }
+
+    // Save to recent list before navigating
+    saveRecentROM({ name, core: sys.core, rom: urlInput || rom, sysId, ts: Date.now() });
+
+    launchEmulator(sys.core, rom, name, sysId);
+  };
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Keyboard shortcut: Enter key on URL input ── */
+  document.getElementById('romUrl').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLaunch();
+  });
+
+})();
+</script>
+</body>
+</html>
