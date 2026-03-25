@@ -1,0 +1,7 @@
+127.0.0.1 - - [25/Mar/2026 04:50:45] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:16] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:16] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:16] "GET /app.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:29] "GET /emulator.html?core=nes&rom=https%3A%2F%2Fexample.com%2Ftest.nes&name=Test+Game&system=nes HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:29] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [25/Mar/2026 04:51:29] "GET /app.js HTTP/1.1" 200 -

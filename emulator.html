@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emulation Station – Playing…</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── Emulator-page specific layout ── */
+    body { overflow-x: hidden; }
+
+    .emulator-page {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh; /* dynamic viewport height for mobile */
+      background: #000;
+    }
+
+    /* Top control bar */
+    .emu-topbar {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .4rem .6rem;
+      background: #0d0d1a;
+      border-bottom: 1px solid #2a2a4a;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+    .emu-topbar .btn { padding: .35rem .7rem; font-size: .75rem; height: 32px; }
+    .game-title {
+      flex: 1;
+      font-size: .85rem;
+      font-weight: 600;
+      text-align: center;
+      color: #8888aa;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 60px;
+    }
+    .sys-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .15rem .45rem;
+      border-radius: 20px;
+      background: rgba(0,212,255,.15);
+      color: #00d4ff;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* EmulatorJS container */
+    #game-wrapper {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: #000;
+      min-height: 200px;
+    }
+    #game {
+      width: 100%;
+      max-width: 960px;
+      background: #000;
+    }
+    /* Force EmulatorJS canvas to fill container */
+    #game > * { width: 100% !important; }
+    #game canvas { display: block; max-width: 100%; }
+
+    /* Virtual gamepad panel */
+    .virtual-gamepad {
+      flex-shrink: 0;
+      background: #0d0d1a;
+      border-top: 1px solid #2a2a4a;
+      padding: .6rem .5rem .9rem;
+      max-width: 960px;
+      width: 100%;
+      align-self: center;
+    }
+
+    /* Gamepad layout */
+    .gp-shoulder-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: .5rem;
+    }
+    .gp-shoulder-group { display: flex; gap: .3rem; }
+
+    .gp-main-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      gap: .25rem;
+    }
+
+    /* D-pad */
+    .dpad {
+      display: grid;
+      grid-template-areas:
+        ". up ."
+        "left center right"
+        ". down .";
+      grid-template-columns: 42px 42px 42px;
+      grid-template-rows: 42px 42px 42px;
+      gap: 2px;
+    }
+    .dpad-up    { grid-area: up; }
+    .dpad-down  { grid-area: down; }
+    .dpad-left  { grid-area: left; }
+    .dpad-right { grid-area: right; }
+    .dpad-center {
+      grid-area: center;
+      background: #1a1a2e;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+
+    /* Action button diamond */
+    .action-diamond {
+      display: grid;
+      grid-template-areas:
+        ". y ."
+        "x . a"
+        ". b .";
+      grid-template-columns: 42px 42px 42px;
+      grid-template-rows: 42px 42px 42px;
+      gap: 2px;
+    }
+    .btn-y { grid-area: y; }
+    .btn-x { grid-area: x; }
+    .btn-a { grid-area: a; }
+    .btn-b { grid-area: b; }
+
+    /* Center group: SELECT / analog / START */
+    .gp-center-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .35rem;
+    }
+    .gp-meta-row { display: flex; gap: .35rem; }
+
+    /* ── Gamepad button base ── */
+    .gp-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-weight: 700;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: filter .08s, transform .08s, box-shadow .08s;
+      position: relative;
+    }
+    .gp-btn:active, .gp-btn.pressed {
+      transform: scale(.88);
+      filter: brightness(1.4);
+    }
+
+    /* D-pad buttons */
+    .dpad-btn {
+      width: 42px; height: 42px;
+      background: #1e1e3a;
+      border-radius: 8px;
+      color: #d0d0e8;
+      font-size: 1.05rem;
+      box-shadow: 0 3px 0 #0d0d22, inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    /* Shoulder buttons */
+    .shoulder-btn {
+      height: 30px;
+      padding: 0 .75rem;
+      background: #1c1c36;
+      border-radius: 7px 7px 4px 4px;
+      color: #8888aa;
+      font-size: .7rem;
+      box-shadow: 0 4px 0 #0a0a18;
+    }
+
+    /* Action buttons */
+    .action-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      font-size: .75rem;
+      color: #fff;
+    }
+    .btn-a { background: #1e88e5; box-shadow: 0 3px 0 #0d47a1; }
+    .btn-b { background: #e53935; box-shadow: 0 3px 0 #b71c1c; }
+    .btn-x { background: #f57c00; box-shadow: 0 3px 0 #bf360c; }
+    .btn-y { background: #43a047; box-shadow: 0 3px 0 #1b5e20; }
+
+    /* Meta buttons (select/start) */
+    .meta-btn {
+      padding: .25rem .6rem;
+      height: 26px;
+      background: #22223a;
+      border-radius: 20px;
+      color: #7878a0;
+      font-size: .63rem;
+      box-shadow: 0 2px 0 #0d0d22;
+    }
+
+    /* Gamepad toggle */
+    #toggleGamepad {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: #7b2fff;
+      color: #fff;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(123,47,255,.55);
+      touch-action: none;
+    }
+    #toggleGamepad:hover { background: #6320cc; }
+
+    /* keyboard hint (desktop) */
+    .kb-hint {
+      text-align: center;
+      font-size: .72rem;
+      color: #555580;
+      padding: .3rem 0 .5rem;
+      border-top: 1px solid #1a1a2e;
+      margin-top: .5rem;
+    }
+  </style>
+</head>
+<body class="emulator-page">
+
+<!-- ══ Top bar ══════════════════════════════════════════════════════════ -->
+<nav class="emu-topbar" aria-label="Emulator controls">
+  <a href="index.html" class="btn btn-secondary" title="Back to launcher">← Back</a>
+  <span class="game-title" id="gameTitle">Loading…</span>
+  <span class="sys-badge" id="sysBadge"></span>
+  <button class="btn btn-secondary" id="btnFullscreen" title="Fullscreen (F)">⛶</button>
+  <button class="btn btn-secondary" id="btnSave"       title="Save State">💾</button>
+  <button class="btn btn-secondary" id="btnLoad"       title="Load State">📂</button>
+</nav>
+
+<!-- ══ Game Screen ═══════════════════════════════════════════════════════ -->
+<div id="game-wrapper">
+  <div id="game"></div>
+</div>
+
+<!-- ══ Virtual Gamepad (BELOW the screen) ════════════════════════════════ -->
+<div class="virtual-gamepad" id="virtualGamepad" aria-label="Virtual game controller">
+
+  <!-- Shoulder buttons row -->
+  <div class="gp-shoulder-row">
+    <div class="gp-shoulder-group">
+      <button class="gp-btn shoulder-btn" data-button="l1" aria-label="L1">L1</button>
+      <button class="gp-btn shoulder-btn" data-button="l2" aria-label="L2">L2</button>
+    </div>
+    <div class="gp-shoulder-group">
+      <button class="gp-btn shoulder-btn" data-button="r1" aria-label="R1">R1</button>
+      <button class="gp-btn shoulder-btn" data-button="r2" aria-label="R2">R2</button>
+    </div>
+  </div>
+
+  <!-- Main row: D-pad | meta | action diamond -->
+  <div class="gp-main-row">
+
+    <!-- D-pad -->
+    <div class="dpad" aria-label="Directional pad">
+      <button class="gp-btn dpad-btn dpad-up"    data-button="up"    aria-label="Up">▲</button>
+      <button class="gp-btn dpad-btn dpad-left"  data-button="left"  aria-label="Left">◀</button>
+      <div class="dpad-center" aria-hidden="true"></div>
+      <button class="gp-btn dpad-btn dpad-right" data-button="right" aria-label="Right">▶</button>
+      <button class="gp-btn dpad-btn dpad-down"  data-button="down"  aria-label="Down">▼</button>
+    </div>
+
+    <!-- Select / Start -->
+    <div class="gp-center-group">
+      <div class="gp-meta-row">
+        <button class="gp-btn meta-btn" data-button="select" aria-label="Select">SELECT</button>
+        <button class="gp-btn meta-btn" data-button="start"  aria-label="Start">START</button>
+      </div>
+    </div>
+
+    <!-- Action buttons diamond: Y / X · A / B -->
+    <div class="action-diamond" aria-label="Action buttons">
+      <button class="gp-btn action-btn btn-y" data-button="y" aria-label="Y button">Y</button>
+      <button class="gp-btn action-btn btn-x" data-button="x" aria-label="X button">X</button>
+      <button class="gp-btn action-btn btn-a" data-button="a" aria-label="A button">A</button>
+      <button class="gp-btn action-btn btn-b" data-button="b" aria-label="B button">B</button>
+    </div>
+
+  </div><!-- /.gp-main-row -->
+
+  <!-- Keyboard hint shown on desktop -->
+  <div class="kb-hint">
+    ⌨ Keyboard: Arrows = D-pad &nbsp;|&nbsp; Z=B &nbsp; X=A &nbsp; A=Y &nbsp; S=X &nbsp;
+    Enter=Start &nbsp; Shift=Select &nbsp; Q=L1 &nbsp; W=R1
+  </div>
+
+</div><!-- /#virtualGamepad -->
+
+<!-- ══ Gamepad toggle FAB (mobile: always show; desktop: toggle) ══════════ -->
+<button id="toggleGamepad" title="Toggle gamepad" aria-label="Toggle virtual gamepad">🎮</button>
+
+<!-- ══ Toast ══════════════════════════════════════════════════════════════ -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ══ Scripts ══════════════════════════════════════════════════════════ -->
+<script src="app.js"></script>
+<script>
+(function () {
+  const params = getQueryParams();
+  const core   = params.core;
+  const romUrl = params.rom;
+  const name   = params.name || 'Game';
+  const sysId  = params.system;
+
+  /* ── Guard: must have core and ROM ── */
+  if (!core || !romUrl) {
+    document.getElementById('gameTitle').textContent = 'No ROM specified';
+    document.getElementById('game-wrapper').innerHTML =
+      '<div style="color:#ff4444;padding:2rem;text-align:center">' +
+      '⚠️ No ROM URL or system core provided.<br><br>' +
+      '<a href="index.html" style="color:#00d4ff">← Go back to the launcher</a></div>';
+    document.getElementById('virtualGamepad').style.display = 'none';
+    document.getElementById('toggleGamepad').style.display  = 'none';
+    return;
+  }
+
+  /* ── Display game title and system badge ── */
+  document.title = name + ' – Emulation Station';
+  document.getElementById('gameTitle').textContent = name;
+
+  const sys = sysId ? getSystem(sysId) : null;
+  const badge = document.getElementById('sysBadge');
+  if (sys) badge.textContent = sys.name;
+
+  /* ── Save to recent list ── */
+  saveRecentROM({ name, core, rom: romUrl, sysId: sysId || '', ts: Date.now() });
+
+  /* ── EmulatorJS configuration ─────────────────────────────────────────
+     All EJS_* variables must be set BEFORE loading emulator.min.js
+     ────────────────────────────────────────────────────────────────── */
+  window.EJS_player       = '#game';
+  window.EJS_core         = core;
+  window.EJS_gameUrl      = romUrl;
+  window.EJS_pathtodata   = 'https://cdn.emulatorjs.org/stable/data/';
+  window.EJS_startOnLoaded = true;
+
+  // Disable the built-in overlay gamepad; we render our own below the screen
+  window.EJS_VirtualGamepad = false;
+
+  // Theme colours
+  window.EJS_color            = '#00d4ff';
+  window.EJS_backgroundColor  = '#000000';
+
+  // Hide buttons we don't need
+  window.EJS_Buttons = {
+    playPause:    true,
+    restart:      true,
+    mute:         true,
+    settings:     true,
+    fullscreen:   true,
+    save:         true,
+    load:         true,
+    gamepad:      false,
+    cheat:        false,
+    volume:       true,
+    saveSate:     true,
+    loadState:    true,
+    screenRecord: false,
+    screenshot:   false,
+    cacheManager: false,
+  };
+
+  /* ── Callback: game started ── */
+  window.EJS_onGameStart = function () {
+    // Initialise virtual gamepad input AFTER emulator is ready
+    initVirtualGamepad();
+    showToast('🎮 Game started! Enjoy.');
+  };
+
+  /* ── Callback: loading state ── */
+  window.EJS_onLoadState = function () { showToast('💾 State loaded.'); };
+  window.EJS_onSaveState = function () { showToast('💾 State saved.'); };
+
+  /* ── Inject EmulatorJS script dynamically ── */
+  const ejsScript    = document.createElement('script');
+  ejsScript.src      = 'https://cdn.emulatorjs.org/stable/data/emulator.min.js';
+  ejsScript.async    = false;
+  ejsScript.onerror  = function () {
+    document.getElementById('game-wrapper').innerHTML =
+      '<div style="color:#ff4444;padding:2rem;text-align:center">' +
+      '⚠️ Failed to load EmulatorJS. Please check your internet connection and try again.<br><br>' +
+      '<a href="index.html" style="color:#00d4ff">← Back to launcher</a></div>';
+  };
+  document.head.appendChild(ejsScript);
+
+  /* ── Fullscreen ── */
+  document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+  document.addEventListener('keydown', e => { if (e.key === 'f' || e.key === 'F') toggleFullscreen(); });
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.getElementById('game-wrapper').requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  /* ── Save / Load state via EmulatorJS API ── */
+  document.getElementById('btnSave').addEventListener('click', () => {
+    if (window.EJS_emulator) {
+      window.EJS_emulator.saveState();
+      showToast('💾 State saved.');
+    } else {
+      showToast('⚠️ Emulator not ready yet.');
+    }
+  });
+  document.getElementById('btnLoad').addEventListener('click', () => {
+    if (window.EJS_emulator) {
+      window.EJS_emulator.loadState();
+      showToast('📂 State loaded.');
+    } else {
+      showToast('⚠️ Emulator not ready yet.');
+    }
+  });
+
+  /* ── Toggle virtual gamepad ── */
+  const gamepadEl    = document.getElementById('virtualGamepad');
+  const toggleBtn    = document.getElementById('toggleGamepad');
+  let   gamepadVisible = true;
+
+  // On desktop: hide gamepad by default; show toggle button
+  if (window.matchMedia('(min-width: 900px)').matches) {
+    gamepadEl.style.display = 'none';
+    gamepadVisible = false;
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    gamepadVisible = !gamepadVisible;
+    gamepadEl.style.display = gamepadVisible ? '' : 'none';
+    toggleBtn.title = gamepadVisible ? 'Hide gamepad' : 'Show gamepad';
+    if (gamepadVisible) initVirtualGamepad(); // re-bind in case DOM was hidden
+  });
+
+})();
+</script>
+</body>
+</html>
