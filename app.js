@@ -252,7 +252,7 @@ const GP_AGENTS = [
     name:   'Gitflow',
     symbol: '≋',
     title:  'The Streamliner',
-    role:   'Manages momentum of the inertia pool. Ensures smooth cloning/forking without rhythm shock.',
+    role:   `Manages momentum of the inertia pool. Ensures smooth cloning/forking without rhythm shock.`,
     color:  '#00d4ff',
     status: 'nominal',
     health: 98,
@@ -282,7 +282,7 @@ const GP_AGENTS = [
     name:   'Gitsync',
     symbol: '⟲',
     title:  'The Harmonizer',
-    role:   'Re-integrates patched rhythms back into the main existence. Ensures healing isn\'t rejected.',
+    role:   `Re-integrates patched rhythms back into the main existence. Ensures healing isn't rejected.`,
     color:  '#7b2fff',
     status: 'syncing',
     health: 74,
@@ -329,7 +329,7 @@ function saveGPState(state) {
  */
 function gpHeartbeat(agents) {
   return agents.map(a => {
-    const delta  = (Math.random() - 0.5) * 4;
+    const delta  = (Math.random() - 0.5) * GP_HEALTH_DELTA;
     const health = Math.max(10, Math.min(100, a.health + delta));
     const statuses = ['nominal', 'scanning', 'syncing', 'alert', 'healing'];
     const status  = health < 40 ? 'alert'
@@ -344,6 +344,12 @@ function gpHeartbeat(agents) {
    ════════════════════════════════════════════════════════════════════════════ */
 
 const GENIE_KEY = 'es_genie_state';
+
+/** XP required to advance one level — shared by awardPlayer and the Genie UI. */
+const XP_PER_LEVEL = 100;
+
+/** Maximum health delta per GP heartbeat tick. */
+const GP_HEALTH_DELTA = 4;
 
 const DEFAULT_GENIE_STATE = {
   points:    0,
@@ -375,7 +381,7 @@ function awardPlayer(pts, coins) {
   state.coins  += coins;
   state.xp     += pts;
 
-  const xpPerLevel = 100;
+  const xpPerLevel = XP_PER_LEVEL;
   const newLevel   = Math.floor(state.xp / xpPerLevel) + 1;
   if (newLevel > state.level) {
     state.level = newLevel;

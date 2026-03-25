@@ -522,7 +522,7 @@
     document.getElementById('genieCoins').textContent  = state.coins.toLocaleString();
     document.getElementById('genieLevel').textContent  = state.level;
 
-    const xpPerLevel   = 100;
+    const xpPerLevel   = XP_PER_LEVEL;
     const xpInLevel    = state.xp % xpPerLevel;
     document.getElementById('genieXPBar').style.width = (xpInLevel) + '%';
     document.getElementById('genieXPLabel').textContent = `${xpInLevel} / ${xpPerLevel}`;
@@ -533,9 +533,15 @@
     state.unlockedLevels.forEach(lvl => {
       const badge = document.createElement('span');
       badge.className = 'genie-level-badge';
-      badge.textContent = typeof lvl === 'number' ? `Lv ${lvl}` : lvl.replace('custom_', '').replace(/_/g, ' ');
+      badge.textContent = formatLevelLabel(lvl);
       container.appendChild(badge);
     });
+  }
+
+  /** Format a level identifier for display in a badge. */
+  function formatLevelLabel(lvl) {
+    if (typeof lvl === 'number') return `Lv ${lvl}`;
+    return lvl.replace('custom_', '').replace(/_/g, ' ');
   }
 
   window.applyGenieCheat = function () {
