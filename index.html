@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emulation Station – Play Any Game, Any System</title>
-  <meta name="description" content="Web-based emulation station supporting Atari, Commodore, NES, SNES, N64, GBA, DS, Genesis, Dreamcast, PlayStation and more. Load ROMs from any URL." />
+  <meta name="description" content="Web-based emulation station supporting Atari, Commodore, NES, SNES, N64, GBA, DS, Genesis, Dreamcast, PlayStation and more. Load ROMs from any URL or TonsGanes.com." />
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* ── Page-specific overrides ── */
@@ -36,7 +36,7 @@
   <div class="logo">🎮 Emulation Station</div>
   <p class="tagline">[ Every system. Every game. Paste a ROM URL and play instantly. ]</p>
   <nav class="header-links" aria-label="External links">
-    <a href="https://romsgames.com" target="_blank" rel="noopener">🕹 RomsGames.com</a>
+    <a href="https://tonsganes.com" target="_blank" rel="noopener">🕹 TonsGanes.com</a>
     <a href="https://emulatorjs.org" target="_blank" rel="noopener">⚡ EmulatorJS</a>
     <a href="#gp-suite">◈ GP Suite</a>
   </nav>
@@ -67,7 +67,7 @@
       <!-- Row 2: URL input -->
       <div class="input-group">
         <label for="romUrl">ROM URL</label>
-        <input type="url" id="romUrl" placeholder="https://example.com/game.nes" autocomplete="off" />
+        <input type="url" id="romUrl" placeholder="https://tonsganes.com/roms/game.zip" autocomplete="off" />
       </div>
 
       <!-- Row 3: OR / file upload / launch -->
@@ -85,10 +85,8 @@
 
       <p class="cors-note">
         ⚠️ <strong>CORS note:</strong> The ROM server must allow cross-origin requests.
-        If your URL doesn't work, try a
-        <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener">CORS proxy</a>,
-        download the ROM and use the local-file option, or browse
-        <a href="https://romsgames.com" target="_blank" rel="noopener">RomsGames.com</a> for compatible ROMs.
+        If your URL doesn't work, download the ROM and use the local-file option, or browse
+        <a href="https://tonsganes.com" target="_blank" rel="noopener">TonsGanes.com</a> for compatible ROMs.
       </p>
     </div>
   </section>
