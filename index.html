@@ -211,27 +211,41 @@
     });
   });
 
-  /* ── File input – auto-fill ROM name from filename ── */
+  /* ── Local ROM storage key (shared with emulator.html) ── */
+  var LOCAL_ROM_KEY = 'es_local_rom_v1';
+
+  /* ── File input – read ROM into sessionStorage as Data URL ── */
   document.getElementById('romFile').addEventListener('change', function () {
     if (!this.files || !this.files[0]) return;
     const file = this.files[0];
-    window._localRomUrl  = URL.createObjectURL(file);
     window._localRomName = file.name.replace(/\.[^.]+$/, '');
 
     const nameInput = document.getElementById('gameName');
     if (!nameInput.value) nameInput.value = window._localRomName;
 
     const ext   = ('.' + file.name.split('.').pop()).toLowerCase();
-    const match = SYSTEMS.find(s => s.exts.split(' ').includes(ext));
+    const match = SYSTEMS.find(function (s) { return s.exts.split(' ').includes(ext); });
     if (match) {
       document.getElementById('systemSelect').value = match.id;
-      document.querySelectorAll('.system-card').forEach(c => {
+      document.querySelectorAll('.system-card').forEach(function (c) {
         c.classList.remove('selected');
         c.style.borderColor = 'var(--border)';
         c.style.boxShadow   = '';
       });
     }
-    showToast(`📁 Loaded: ${file.name}`);
+
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        sessionStorage.setItem(LOCAL_ROM_KEY, reader.result);
+        sessionStorage.setItem(LOCAL_ROM_KEY + ':name', file.name);
+        showToast('📁 Loaded: ' + file.name);
+      } catch (e) {
+        showToast('⚠️ ROM file exceeds browser session storage quota. Try a smaller file.');
+      }
+    };
+    reader.onerror = function () { showToast('⚠️ Could not read that ROM file.'); };
+    reader.readAsDataURL(file);
   });
 
   /* ── Recent ROMs ── */
@@ -275,11 +289,14 @@
 
     const name     = document.getElementById('gameName').value.trim() || window._localRomName || 'Game';
     const urlInput = document.getElementById('romUrl').value.trim();
-    const rom      = window._localRomUrl || urlInput;
+
+    const hasLocal = !!sessionStorage.getItem(LOCAL_ROM_KEY);
+    const rom      = hasLocal ? '__LOCAL__' : urlInput;
 
     if (!rom) { showToast('⚠️ Enter a ROM URL or upload a local file.'); return; }
 
-    saveRecentROM({ name, core: sys.core, rom: urlInput || rom, sysId, ts: Date.now() });
+    // Store history entry — use '__LOCAL__' as sentinel so the data URL is never saved to localStorage
+    saveRecentROM({ name, core: sys.core, rom: hasLocal ? '__LOCAL__' : urlInput, sysId, ts: Date.now() });
     launchEmulator(sys.core, rom, name, sysId);
   };
 
