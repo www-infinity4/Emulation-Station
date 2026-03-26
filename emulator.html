@@ -65,15 +65,16 @@
       align-items: stretch;
       justify-content: center;
       background: #000;
-      min-height: 200px;
+      min-height: 480px;
     }
     #game {
       width: 100%;
       max-width: 960px;
+      height: 100%;
+      min-height: 480px;
       background: #000;
     }
-    #game > * { width: 100% !important; }
-    #game canvas { display: block; max-width: 100%; }
+    #game canvas { display: block; width: 100%; max-width: 100%; }
 
     /* Virtual gamepad panel */
     .virtual-gamepad {
@@ -409,7 +410,7 @@
   window.EJS_player        = '#game';
   window.EJS_core          = core;
   window.EJS_gameUrl       = romUrl;
-  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/stable/data/';
+  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
   window.EJS_startOnLoaded = true;
   window.EJS_VirtualGamepad   = false;
   window.EJS_color            = '#00d4ff';
@@ -423,15 +424,15 @@
     fullscreen:   true,
     save:         true,
     load:         true,
-    gamepad:      false,
-    cheat:        false,
+    gamepad:      true,
+    cheat:        true,
     volume:       true,
-    saveSate:     true,   // EmulatorJS uses this misspelling; kept for API compatibility
+    saveSate:     true,
     saveState:    true,
     loadState:    true,
-    screenRecord: false,
-    screenshot:   false,
-    cacheManager: false,
+    screenRecord: true,
+    screenshot:   true,
+    cacheManager: true,
   };
 
   /* ── Callback: game started ── */
@@ -460,7 +461,7 @@
 
   /* ── Inject EmulatorJS script dynamically ── */
   const ejsScript   = document.createElement('script');
-  ejsScript.src     = 'https://cdn.emulatorjs.org/stable/data/emulator.min.js';
+  ejsScript.src     = 'https://cdn.emulatorjs.org/latest/data/emulator.min.js';
   ejsScript.async   = false;
   ejsScript.onerror = function () {
     document.getElementById('game-wrapper').innerHTML =
