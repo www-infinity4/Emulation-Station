@@ -378,9 +378,37 @@
 (function () {
   const params = getQueryParams();
   const core   = params.core;
-  const romUrl = params.rom;
+  let   romUrl = params.rom;
   const name   = params.name || 'Game';
   const sysId  = params.system;
+
+  const LOCAL_ROM_KEY = 'es_local_rom_v1';
+
+  /* ── Local ROM: rebuild a blob URL from sessionStorage Data URL ── */
+  if (romUrl === '__LOCAL__') {
+    const dataUrl = sessionStorage.getItem(LOCAL_ROM_KEY);
+    if (!dataUrl) {
+      document.getElementById('gameTitle').textContent = 'Local ROM missing';
+      document.getElementById('game-wrapper').innerHTML =
+        '<div style="color:#ff4444;padding:2rem;text-align:center;font-family:var(--font-mono)">' +
+        '⚠️ Local ROM data was not found (session may have expired or been cleared).<br><br>' +
+        '<a href="index.html" style="color:var(--accent)">← Go back to the launcher</a></div>';
+      document.getElementById('virtualGamepad').style.display = 'none';
+      document.getElementById('toggleGamepad').style.display  = 'none';
+      document.getElementById('geniePanel').style.display     = 'none';
+      return;
+    }
+    // Convert Data URL → Blob → fresh blob: URL (valid in this page's context)
+    const comma     = dataUrl.indexOf(',');
+    const meta      = dataUrl.slice(0, comma);
+    const b64       = dataUrl.slice(comma + 1);
+    const mimeMatch = /data:([^;]+)/.exec(meta);
+    const mime      = (mimeMatch && mimeMatch[1]) ? mimeMatch[1] : 'application/octet-stream';
+    const binary    = atob(b64);
+    const bytes     = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: mime });
+    romUrl = URL.createObjectURL(blob);
+  }
 
   /* ── Guard: must have core and ROM ── */
   if (!core || !romUrl) {

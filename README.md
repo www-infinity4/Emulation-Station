@@ -65,7 +65,19 @@ app.js         – System definitions, helpers, virtual-gamepad input
 
 ---
 
-## ROM Sources & CORS
+## Local File Uploads
+
+When you choose a local ROM file on the launcher, the file is read into memory and stored in the browser's **`sessionStorage`** as a Base64 Data URL (key: `es_local_rom_v1`).
+
+- Storage is **per-tab and per-session**: the data is cleared automatically when the tab is closed.
+- The emulator page (`emulator.html`) reads the Data URL back from `sessionStorage`, converts it to a Blob, and creates a fresh `blob:` URL — this avoids the cross-document blob URL restrictions that prevented local ROMs from loading in Chrome.
+- No ROM data is ever written to `localStorage` or sent over the network.
+
+> **Note:** Very large disc images (PS1/Dreamcast `.iso`/`.chd`) may exceed `sessionStorage` quota on some browsers. For best results with large files, use a ROM URL instead.
+
+---
+
+
 
 EmulatorJS fetches ROMs via the browser.  
 The ROM server must send a **permissive `Access-Control-Allow-Origin`** header.  
