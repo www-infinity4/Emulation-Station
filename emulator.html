@@ -432,13 +432,15 @@
   if (sys) badge.textContent = sys.name;
 
   /* ── Save to recent list ── */
-  saveRecentROM({ name, core, rom: romUrl, sysId: sysId || '', ts: Date.now() });
+  // Use the original params.rom (e.g. '__LOCAL__' sentinel or the URL) so that
+  // local-file entries remain replayable rather than saving an ephemeral blob URL.
+  saveRecentROM({ name, core, rom: params.rom, sysId: sysId || '', ts: Date.now() });
 
   /* ── EmulatorJS configuration ────────────────────────────────────────── */
   window.EJS_player        = '#game';
   window.EJS_core          = core;
   window.EJS_gameUrl       = romUrl;
-  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
+  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/stable/data/';
   window.EJS_startOnLoaded = true;
   window.EJS_VirtualGamepad   = false;
   window.EJS_color            = '#00d4ff';
@@ -489,7 +491,7 @@
 
   /* ── Inject EmulatorJS script dynamically ── */
   const ejsScript   = document.createElement('script');
-  ejsScript.src     = 'https://cdn.emulatorjs.org/latest/data/emulator.min.js';
+  ejsScript.src     = 'https://cdn.emulatorjs.org/stable/data/emulator.min.js';
   ejsScript.async   = false;
   ejsScript.onerror = function () {
     document.getElementById('game-wrapper').innerHTML =
