@@ -477,8 +477,9 @@
 
   /* ── Enable Save/Load buttons once emulator is ready ── */
   function enableSaveLoad() {
-    document.getElementById('btnSave').removeAttribute('disabled');
-    document.getElementById('btnLoad').removeAttribute('disabled');
+    const emu = window.EJS_emulator;
+    document.getElementById('btnSave').disabled = !(emu && typeof emu.saveState === 'function');
+    document.getElementById('btnLoad').disabled = !(emu && typeof emu.loadState === 'function');
   }
 
   /* ── Poll for emulator readiness (fallback if EJS_onGameStart doesn't fire) ── */
@@ -512,19 +513,13 @@
   }
 
   /* ── Save / Load state via EmulatorJS API ── */
-  document.getElementById('btnSave').addEventListener('click', () => {
-    if (window.EJS_emulator) {
-      window.EJS_emulator.saveState();
-    } else {
-      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
-    }
+  document.getElementById('btnSave').addEventListener('click', async () => {
+    const ok = await performEmulatorStateAction(window.EJS_emulator, 'saveState');
+    if (!ok) showToast('⚠️ Save unavailable here. Try the built-in EmulatorJS save-state menu.');
   });
-  document.getElementById('btnLoad').addEventListener('click', () => {
-    if (window.EJS_emulator) {
-      window.EJS_emulator.loadState();
-    } else {
-      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
-    }
+  document.getElementById('btnLoad').addEventListener('click', async () => {
+    const ok = await performEmulatorStateAction(window.EJS_emulator, 'loadState');
+    if (!ok) showToast('⚠️ Load unavailable here. Try the built-in EmulatorJS load-state menu.');
   });
 
   /* ── Toggle virtual gamepad ── */
