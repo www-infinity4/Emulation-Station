@@ -250,6 +250,17 @@ function initVirtualGamepad() {
   });
 }
 
+/** Invoke only supported EmulatorJS state operations; false never means saved. */
+async function performEmulatorStateAction(emulator, method) {
+  if (!['saveState','loadState'].includes(method) || !emulator || typeof emulator[method] !== 'function') return false;
+  try {
+    await emulator[method]();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /* ── Emulator readiness polling ─────────────────────────────────────────── */
 
 /**
