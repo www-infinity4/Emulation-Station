@@ -99,6 +99,7 @@
       align-items: center;
       justify-content: space-around;
       gap: .25rem;
+      flex-wrap: wrap;
     }
 
     /* D-pad */
@@ -108,8 +109,8 @@
         ". up ."
         "left center right"
         ". down .";
-      grid-template-columns: 42px 42px 42px;
-      grid-template-rows: 42px 42px 42px;
+      grid-template-columns: 44px 44px 44px;
+      grid-template-rows: 44px 44px 44px;
       gap: 2px;
     }
     .dpad-up    { grid-area: up; }
@@ -130,8 +131,8 @@
         ". y ."
         "x . a"
         ". b .";
-      grid-template-columns: 42px 42px 42px;
-      grid-template-rows: 42px 42px 42px;
+      grid-template-columns: 44px 44px 44px;
+      grid-template-rows: 44px 44px 44px;
       gap: 2px;
     }
     .btn-y { grid-area: y; }
@@ -155,6 +156,8 @@
       outline: none;
       cursor: pointer;
       font-weight: 700;
+      min-width: 44px;
+      min-height: 44px;
       touch-action: none;
       -webkit-tap-highlight-color: transparent;
       transition: filter .08s, transform .08s, box-shadow .08s;
@@ -166,7 +169,7 @@
     }
 
     .dpad-btn {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       background: #181830;
       border-radius: 8px;
       color: #d0d0e8;
@@ -175,7 +178,7 @@
     }
 
     .shoulder-btn {
-      height: 30px;
+      height: 44px;
       padding: 0 .75rem;
       background: #141428;
       border-radius: 7px 7px 4px 4px;
@@ -187,7 +190,7 @@
     }
 
     .action-btn {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       border-radius: 50%;
       font-family: var(--font-hud);
       font-size: .7rem;
@@ -200,7 +203,7 @@
 
     .meta-btn {
       padding: .25rem .6rem;
-      height: 26px;
+      height: 44px;
       background: #181830;
       border-radius: 20px;
       color: #7070a0;
