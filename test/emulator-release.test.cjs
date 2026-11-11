@@ -95,3 +95,9 @@ test('save/load guard rejects missing APIs and failed state actions without clai
   assert.equal(loaded,false);
   assert.match(player,/performEmulatorStateAction\(window\.EJS_emulator/);
 });
+
+test('mobile gamepad has at least 44px touch targets and wraps at narrow widths',()=>{
+  assert.match(player,/\.gp-main-row\s*\{[^}]*flex-wrap:\s*wrap/s);
+  assert.match(player,/\.gp-btn\s*\{[^}]*min-width:\s*44px;[^}]*min-height:\s*44px/s);
+  assert.match(player,/\.dpad-btn\s*\{[^}]*width:\s*44px;\s*height:\s*44px/s);
+});
