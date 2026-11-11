@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Emulation Station – Play Any Game, Any System</title>
-  <meta name="description" content="Web-based emulation station supporting Atari, Commodore, NES, SNES, N64, GBA, DS, Genesis, Dreamcast, PlayStation and more. Load ROMs from any URL or TonsGanes.com." />
+  <meta name="description" content="Web-based emulation station supporting Atari, Commodore, NES, SNES, N64, GBA, DS, Genesis, Dreamcast, PlayStation and more. Load authorized homebrew or licensed game ROMs from HTTPS URLs or local files." />
   <link rel="stylesheet" href="styles.css" />
   <style>
     /* ── Page-specific overrides ── */
@@ -34,9 +34,9 @@
 <!-- ══ Header ══════════════════════════════════════════════════════════════ -->
 <header class="site-header">
   <div class="logo">🎮 Emulation Station</div>
-  <p class="tagline">[ Every system. Every game. Paste a ROM URL and play instantly. ]</p>
+  <p class="tagline">[ Choose a system and play a ROM you are authorized to use. ]</p>
   <nav class="header-links" aria-label="External links">
-    <a href="https://tonsganes.com" target="_blank" rel="noopener">🕹 TonsGanes.com</a>
+    <a href="https://emulatorjs.org/docs/" target="_blank" rel="noopener">🎮 EmulatorJS documentation</a>
     <a href="https://emulatorjs.org" target="_blank" rel="noopener">⚡ EmulatorJS</a>
     <a href="#gp-suite">◈ GP Suite</a>
   </nav>
@@ -67,7 +67,7 @@
       <!-- Row 2: URL input -->
       <div class="input-group">
         <label for="romUrl">ROM URL</label>
-        <input type="url" id="romUrl" placeholder="https://tonsganes.com/roms/game.zip" autocomplete="off" />
+        <input type="url" id="romUrl" placeholder="https://example.org/authorized-homebrew.nes" autocomplete="off" />
       </div>
 
       <!-- Row 3: OR / file upload / launch -->
