@@ -101,9 +101,18 @@ function getQueryParams() {
  * @param {string} name   – Human-readable game name
  * @param {string} sysId  – System id (for display)
  */
+function isAllowedROMSource(rom) {
+  if (rom === '__LOCAL__') return true;
+  try { return ['http:', 'https:'].includes(new URL(rom).protocol); }
+  catch { return false; }
+}
+
 function launchEmulator(core, rom, name, sysId) {
-  if (!core) { showToast('Please select a system first.'); return; }
-  if (!rom)  { showToast('Please enter a ROM URL or choose a local file.'); return; }
+  if (!getSystemByCore(core)) { showToast('Please select a supported system.'); return; }
+  if (!isAllowedROMSource(rom)) {
+    showToast('Use an authorized http(s) ROM URL or upload a local file.');
+    return;
+  }
 
   const params = new URLSearchParams({ core, rom, name: name || 'Unknown Game', system: sysId || '' });
   window.location.href = 'emulator.html?' + params.toString();
@@ -202,20 +211,42 @@ function simulateKey(buttonId, type /* 'keydown'|'keyup' */) {
 }
 
 /** Attach touchstart/touchend + mousedown/mouseup to all .gp-btn elements. */
+const boundGamepadButtons = new WeakSet();
 function initVirtualGamepad() {
   document.querySelectorAll('.gp-btn').forEach(btn => {
     const id = btn.dataset.button;
-    if (!id) return;
+    if (!id || boundGamepadButtons.has(btn)) return;
+    boundGamepadButtons.add(btn);
+    let heldPointer = null;
 
-    const press   = (e) => { e.preventDefault(); simulateKey(id, 'keydown'); btn.classList.add('pressed'); };
-    const release = (e) => { e.preventDefault(); simulateKey(id, 'keyup');   btn.classList.remove('pressed'); };
+    const release = e => {
+      if (heldPointer === null || (e && e.pointerId != null && e.pointerId !== heldPointer)) return;
+      const pointer = heldPointer;
+      heldPointer = null;
+      if (e && e.preventDefault) e.preventDefault();
+      simulateKey(id, 'keyup');
+      btn.classList.remove('pressed');
+      try { if (btn.hasPointerCapture?.(pointer)) btn.releasePointerCapture(pointer); } catch {}
+    };
+    const press = e => {
+      if (heldPointer !== null || (e.button != null && e.button !== 0)) return;
+      e.preventDefault();
+      heldPointer = e.pointerId;
+      simulateKey(id, 'keydown');
+      btn.classList.add('pressed');
+      try { btn.setPointerCapture?.(e.pointerId); } catch {}
+    };
 
-    btn.addEventListener('touchstart',  press,   { passive: false });
-    btn.addEventListener('touchend',    release, { passive: false });
-    btn.addEventListener('touchcancel', release, { passive: false });
-    btn.addEventListener('mousedown',   press);
-    btn.addEventListener('mouseup',     release);
-    btn.addEventListener('mouseleave',  release);
+    // Pointer Events unify touch, pen and mouse without Android's duplicate
+    // synthetic mouse events; losing focus cancels any held controls.
+    btn.addEventListener('pointerdown', press);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointercancel', release);
+    btn.addEventListener('lostpointercapture', release);
+    window.addEventListener('blur', () => release());
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) release();
+    });
   });
 }
 
