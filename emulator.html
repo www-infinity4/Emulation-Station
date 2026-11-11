@@ -99,6 +99,7 @@
       align-items: center;
       justify-content: space-around;
       gap: .25rem;
+      flex-wrap: wrap;
     }
 
     /* D-pad */
@@ -108,8 +109,8 @@
         ". up ."
         "left center right"
         ". down .";
-      grid-template-columns: 42px 42px 42px;
-      grid-template-rows: 42px 42px 42px;
+      grid-template-columns: 44px 44px 44px;
+      grid-template-rows: 44px 44px 44px;
       gap: 2px;
     }
     .dpad-up    { grid-area: up; }
@@ -130,8 +131,8 @@
         ". y ."
         "x . a"
         ". b .";
-      grid-template-columns: 42px 42px 42px;
-      grid-template-rows: 42px 42px 42px;
+      grid-template-columns: 44px 44px 44px;
+      grid-template-rows: 44px 44px 44px;
       gap: 2px;
     }
     .btn-y { grid-area: y; }
@@ -155,6 +156,8 @@
       outline: none;
       cursor: pointer;
       font-weight: 700;
+      min-width: 44px;
+      min-height: 44px;
       touch-action: none;
       -webkit-tap-highlight-color: transparent;
       transition: filter .08s, transform .08s, box-shadow .08s;
@@ -166,7 +169,7 @@
     }
 
     .dpad-btn {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       background: #181830;
       border-radius: 8px;
       color: #d0d0e8;
@@ -175,7 +178,7 @@
     }
 
     .shoulder-btn {
-      height: 30px;
+      height: 44px;
       padding: 0 .75rem;
       background: #141428;
       border-radius: 7px 7px 4px 4px;
@@ -187,7 +190,7 @@
     }
 
     .action-btn {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       border-radius: 50%;
       font-family: var(--font-hud);
       font-size: .7rem;
@@ -200,7 +203,7 @@
 
     .meta-btn {
       padding: .25rem .6rem;
-      height: 26px;
+      height: 44px;
       background: #181830;
       border-radius: 20px;
       color: #7070a0;
@@ -411,7 +414,7 @@
   }
 
   /* ── Guard: must have core and ROM ── */
-  if (!core || !romUrl) {
+  if (!getSystemByCore(core) || !isAllowedROMSource(params.rom) || !romUrl) {
     document.getElementById('gameTitle').textContent = 'No ROM specified';
     document.getElementById('game-wrapper').innerHTML =
       '<div style="color:#ff4444;padding:2rem;text-align:center;font-family:var(--font-mono)">' +
@@ -432,13 +435,13 @@
   if (sys) badge.textContent = sys.name;
 
   /* ── Save to recent list ── */
-  saveRecentROM({ name, core, rom: romUrl, sysId: sysId || '', ts: Date.now() });
+  saveRecentROM({ name, core, rom: params.rom, sysId: sysId || '', ts: Date.now() });
 
   /* ── EmulatorJS configuration ────────────────────────────────────────── */
   window.EJS_player        = '#game';
   window.EJS_core          = core;
   window.EJS_gameUrl       = romUrl;
-  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/latest/data/';
+  window.EJS_pathtodata    = 'https://cdn.emulatorjs.org/stable/data/';
   window.EJS_startOnLoaded = true;
   window.EJS_VirtualGamepad   = false;
   window.EJS_color            = '#00d4ff';
@@ -477,8 +480,9 @@
 
   /* ── Enable Save/Load buttons once emulator is ready ── */
   function enableSaveLoad() {
-    document.getElementById('btnSave').removeAttribute('disabled');
-    document.getElementById('btnLoad').removeAttribute('disabled');
+    const emu = window.EJS_emulator;
+    document.getElementById('btnSave').disabled = !(emu && typeof emu.saveState === 'function');
+    document.getElementById('btnLoad').disabled = !(emu && typeof emu.loadState === 'function');
   }
 
   /* ── Poll for emulator readiness (fallback if EJS_onGameStart doesn't fire) ── */
@@ -489,7 +493,7 @@
 
   /* ── Inject EmulatorJS script dynamically ── */
   const ejsScript   = document.createElement('script');
-  ejsScript.src     = 'https://cdn.emulatorjs.org/latest/data/emulator.min.js';
+  ejsScript.src     = 'https://cdn.emulatorjs.org/stable/data/loader.js';
   ejsScript.async   = false;
   ejsScript.onerror = function () {
     document.getElementById('game-wrapper').innerHTML =
@@ -512,19 +516,13 @@
   }
 
   /* ── Save / Load state via EmulatorJS API ── */
-  document.getElementById('btnSave').addEventListener('click', () => {
-    if (window.EJS_emulator) {
-      window.EJS_emulator.saveState();
-    } else {
-      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
-    }
+  document.getElementById('btnSave').addEventListener('click', async () => {
+    const ok = await performEmulatorStateAction(window.EJS_emulator, 'saveState');
+    if (!ok) showToast('⚠️ Save unavailable here. Try the built-in EmulatorJS save-state menu.');
   });
-  document.getElementById('btnLoad').addEventListener('click', () => {
-    if (window.EJS_emulator) {
-      window.EJS_emulator.loadState();
-    } else {
-      showToast('⚠️ Emulator not ready yet — wait for the game to start.');
-    }
+  document.getElementById('btnLoad').addEventListener('click', async () => {
+    const ok = await performEmulatorStateAction(window.EJS_emulator, 'loadState');
+    if (!ok) showToast('⚠️ Load unavailable here. Try the built-in EmulatorJS load-state menu.');
   });
 
   /* ── Toggle virtual gamepad ── */

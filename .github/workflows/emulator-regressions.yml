@@ -1,0 +1,17 @@
+name: Emulation Station release regression
+on:
+  push:
+    branches:
+      - fix/1914-android-emulator-release-gates
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify emulator source, mobile controls and ROM safety
+        run: node --test test/*.test.cjs
