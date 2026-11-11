@@ -82,3 +82,16 @@ test('ROMs are owner supplied and not advertised as freely downloadable copyrigh
   assert.doesNotMatch(index,/tonsganes\.com/i);
   assert.match(index,/authorized|homebrew|licensed|permission/i);
 });
+
+test('save/load guard rejects missing APIs and failed state actions without claiming success',async()=>{
+  const h=harness();
+  const missing=await vm.runInContext("performEmulatorStateAction(window.EJS_emulator,'saveState')",h.context);
+  assert.equal(missing,false);
+  h.window.EJS_emulator.saveState=()=>{};
+  const saved=await vm.runInContext("performEmulatorStateAction(window.EJS_emulator,'saveState')",h.context);
+  assert.equal(saved,true);
+  h.window.EJS_emulator.loadState=()=>{throw Error('state unavailable')};
+  const loaded=await vm.runInContext("performEmulatorStateAction(window.EJS_emulator,'loadState')",h.context);
+  assert.equal(loaded,false);
+  assert.match(player,/performEmulatorStateAction\(window\.EJS_emulator/);
+});
