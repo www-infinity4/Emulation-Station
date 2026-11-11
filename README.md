@@ -1,7 +1,7 @@
 # 🎮 Emulation Station
 
 A fully browser-based, multi-system emulation station.  
-Paste **any ROM URL** (or upload a local file) and play instantly — no installs, no plugins.  
+Use an **authorized HTTP(S) ROM URL** or a ROM file you have permission to use. No commercial game files or BIOS are supplied.  
 On-screen virtual controls sit **below** the game screen so the action is always visible.
 
 ---
@@ -18,7 +18,7 @@ On-screen virtual controls sit **below** the game screen so the action is always
 | **Arcade** | MAME 2003 · MAME 2003+ · Final Burn Alpha |
 | **Other** | Neo Geo Pocket · WonderSwan · TurboGrafx-16 · 3DO · MSX · PC-FX |
 
-Emulation is powered by **[EmulatorJS](https://emulatorjs.org/)** (loaded from CDN).
+Emulation is powered by **[EmulatorJS](https://emulatorjs.org/)** through its documented **stable** loader and public CDN. EmulatorJS is GPL-3.0 licensed; individual libretro cores may have additional licenses. This repository does not include any emulator core, game ROM or BIOS binary.
 
 ---
 
@@ -32,7 +32,7 @@ Emulation is powered by **[EmulatorJS](https://emulatorjs.org/)** (loaded from C
 The emulator opens in `emulator.html` with:
 - The game screen filling the viewport.
 - A **virtual gamepad below the screen** (touchscreen / mouse).
-- A top bar with Fullscreen, Save State, and Load State controls.
+- A top bar with Fullscreen and Save/Load shortcuts only where the runtime exposes those APIs; otherwise use the EmulatorJS built-in controls.
 - On desktop, use **keyboard shortcuts** (see table below) or click the 🎮 FAB to show the on-screen pad.
 
 ### Keyboard Controls (Player 1)
@@ -79,7 +79,7 @@ When you choose a local ROM file on the launcher, the file is read into memory a
 
 
 
-EmulatorJS fetches ROMs via the browser.  
+EmulatorJS fetches explicitly supplied remote ROMs via the browser. Only use ROMs and BIOS files you own or have the rights to run.  
 The ROM server must send a **permissive `Access-Control-Allow-Origin`** header.  
 If a direct URL doesn't work, download the ROM and use the **local-file upload** option instead.
 
@@ -99,3 +99,7 @@ python3 -m http.server 8080
 
 - Emulation cores: [EmulatorJS](https://emulatorjs.org/) / [libretro](https://www.libretro.com/)
 - UI & integration: Emulation Station project
+
+## Release verification boundary
+
+The source regression workflow checks launcher schemes, local ROM history, Android Pointer Events and save-state API guards with Node's built-in test runner. It cannot prove WASM core boot, real-game performance, controller mapping, save-state restoration or physical Android operation. Before publishing a playable QuantaPhi Quick Card, run an authorized homebrew NES and SNES ROM with a real Android touch/desktop playthrough, capture actual version, console, screenshots and save/reload results, and confirm applicable emulator/core licenses. Never represent a disabled or unsupported save-state API as a completed save.
